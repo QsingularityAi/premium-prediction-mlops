@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1746051154400
+current_stage: None
+description: null
+last_updated_timestamp: 1746051154400
+name: premium_prediction_high
+run_id: f966c4700425443497ec906d55448986
+run_link: null
+source: /Users/anuragtrivedi/Downloads/End_to End_MLOPs_regression/artifacts/f966c4700425443497ec906d55448986/artifacts/models/high
+status: READY
+status_message: null
+storage_location: /Users/anuragtrivedi/Downloads/End_to End_MLOPs_regression/artifacts/f966c4700425443497ec906d55448986/artifacts/models/high
+user_id: null
+version: 2

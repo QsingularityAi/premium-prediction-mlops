@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1746051199713
+current_stage: None
+description: null
+last_updated_timestamp: 1746051199713
+name: premium_prediction_very_low
+run_id: 249d276dc6d74b1b9277c048f01510ca
+run_link: null
+source: /Users/anuragtrivedi/Downloads/End_to End_MLOPs_regression/artifacts/249d276dc6d74b1b9277c048f01510ca/artifacts/models/very_low
+status: READY
+status_message: null
+storage_location: /Users/anuragtrivedi/Downloads/End_to End_MLOPs_regression/artifacts/249d276dc6d74b1b9277c048f01510ca/artifacts/models/very_low
+user_id: null
+version: 3

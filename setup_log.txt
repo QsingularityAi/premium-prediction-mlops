@@ -1,0 +1,43 @@
+MLOps Premium Prediction Setup Log - Wed Apr 30 22:59:44 CEST 2025
+Wed Apr 30 22:59:44 CEST 2025: Starting setup process
+Wed Apr 30 22:59:44 CEST 2025: \n\033[1;33mStep 1: Checking prerequisites...\033[0m
+Wed Apr 30 22:59:44 CEST 2025: Found Python version: \033[0;32m3.13.1\033[0m
+Wed Apr 30 22:59:44 CEST 2025: Found Docker version: \033[0;32m28.0.4\033[0m
+Wed Apr 30 22:59:44 CEST 2025: Found kubectl version: \033[0;32m\033[0m
+Wed Apr 30 22:59:44 CEST 2025: Found Git version: \033[0;32m2.39.5\033[0m
+Wed Apr 30 22:59:44 CEST 2025: \033[0;32mPrerequisites check completed\033[0m
+Wed Apr 30 22:59:44 CEST 2025: \n\033[1;33mStep 2: Creating directory structure...\033[0m
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: data/raw
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: data/processed
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: models
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: logs
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: artifacts
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: tests
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: prometheus
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: grafana/provisioning/dashboards
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: grafana/provisioning/datasources
+Wed Apr 30 22:59:44 CEST 2025: Directory already exists: mlruns
+Wed Apr 30 22:59:44 CEST 2025: \033[0;32mDirectory structure created\033[0m
+Wed Apr 30 22:59:44 CEST 2025: \n\033[1;33mStep 3: Setting up Python virtual environment...\033[0m
+Wed Apr 30 22:59:44 CEST 2025: Virtual environment already exists at venv
+Wed Apr 30 22:59:49 CEST 2025: Removing existing virtual environment...
+Wed Apr 30 22:59:52 CEST 2025: Creating new Python virtual environment...
+Wed Apr 30 22:59:53 CEST 2025: \033[0;32mVirtual environment created successfully\033[0m
+Wed Apr 30 22:59:53 CEST 2025: Activating virtual environment and installing dependencies...
+Wed Apr 30 23:00:46 CEST 2025: \033[0;32mDependencies installed successfully\033[0m
+Wed Apr 30 23:00:46 CEST 2025: \n\033[1;33mStep 4: Initializing version control...\033[0m
+Wed Apr 30 23:00:46 CEST 2025: Git repository already initialized
+Wed Apr 30 23:00:46 CEST 2025: DVC already initialized
+Wed Apr 30 23:00:46 CEST 2025: \n\033[1;33mStep 5: Setting up monitoring infrastructure...\033[0m
+Wed Apr 30 23:00:46 CEST 2025: Creating Prometheus configuration...
+Wed Apr 30 23:00:46 CEST 2025: Creating Grafana datasource configuration...
+Wed Apr 30 23:00:46 CEST 2025: Creating Grafana dashboard configuration...
+Wed Apr 30 23:00:46 CEST 2025: \033[0;32mMonitoring infrastructure set up successfully\033[0m
+Wed Apr 30 23:00:46 CEST 2025: \n\033[1;33mStep 6: Setting up initial configuration...\033[0m
+Wed Apr 30 23:00:46 CEST 2025: Created .gitkeep in empty directory: \033[0;32mdata/raw\033[0m
+Wed Apr 30 23:00:46 CEST 2025: Created .gitkeep in empty directory: \033[0;32mdata/processed\033[0m
+Wed Apr 30 23:00:46 CEST 2025: Created .gitkeep in empty directory: \033[0;32mmodels\033[0m
+Wed Apr 30 23:00:46 CEST 2025: Created .gitkeep in empty directory: \033[0;32mlogs\033[0m
+Wed Apr 30 23:00:46 CEST 2025: Created .gitkeep in empty directory: \033[0;32martifacts\033[0m
+Wed Apr 30 23:00:46 CEST 2025: Created .gitkeep in empty directory: \033[0;32mmlruns\033[0m
+Wed Apr 30 23:00:46 CEST 2025: \033[0;32mInitial configuration complete\033[0m

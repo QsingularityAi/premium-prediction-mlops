@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1746051337475
+current_stage: None
+description: null
+last_updated_timestamp: 1746051337475
+name: premium_prediction_medium
+run_id: 64bd40d659dc405b8ab0febab4e162fc
+run_link: null
+source: /Users/anuragtrivedi/Downloads/End_to End_MLOPs_regression/artifacts/64bd40d659dc405b8ab0febab4e162fc/artifacts/models/medium
+status: READY
+status_message: null
+storage_location: /Users/anuragtrivedi/Downloads/End_to End_MLOPs_regression/artifacts/64bd40d659dc405b8ab0febab4e162fc/artifacts/models/medium
+user_id: null
+version: 4

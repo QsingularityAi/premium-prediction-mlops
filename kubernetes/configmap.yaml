@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: premium-model-config
+  namespace: mlops-premium
+data:
+  MODEL_VERSION: "latest"
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  API_WORKERS: "4"
+  API_TIMEOUT: "120"
+  LOG_LEVEL: "info"
+  ENABLE_DOCS: "true"
+  ENABLE_MONITORING: "true"
+  FEATURE_DRIFT_THRESHOLD: "0.1"
+  MODEL_PERFORMANCE_THRESHOLD_RMSE: "0.15"
+  MODEL_PERFORMANCE_THRESHOLD_R2: "0.75"
+  MLFLOW_TRACKING_URI: "http://mlflow-service:5000"
+  PROMETHEUS_MULTIPROC_DIR: "/tmp"
+  DATA_DIR: "/app/data"
+  MODEL_DIR: "/app/models"
+  ARTIFACTS_DIR: "/app/artifacts"
+  LOGGING_DIR: "/app/logs"
+

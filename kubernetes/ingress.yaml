@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: premium-model-api-ingress
+  namespace: mlops-premium
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+spec:
+  rules:
+  - host: api.premium-model.example.com  # Replace with your actual domain
+    http:
+      paths:
+      - path: /(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: premium-model-api-service
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - api.premium-model.example.com  # Replace with your actual domain
+    secretName: premium-model-tls-secret  # Create this secret separately
+

@@ -1,0 +1,186 @@
+# MLOps Project Configuration
+
+# Data settings
+data:
+  data_path: "data/raw/train_sampled2.csv"
+  target_column: "Premium_Amount"
+  test_size: 0.2
+  required_columns: []  # Add required columns for prediction if needed
+  validation_schema: {}  # Add data validation schema if needed
+  
+# Paths configuration
+paths:
+  data_dir: "data"
+  raw_data_dir: "data/raw"
+  processed_data_dir: "data/processed"
+  model_dir: "models"
+  artifacts_dir: "artifacts"
+  logging_dir: "logs"
+  
+# Training configuration
+training:
+  random_state: 42
+  n_iter_search: 5  # Number of iterations for RandomizedSearchCV
+  cv_folds_tuning: 3
+  cv_folds_eval: 5
+  feature_selection_threshold: "median"  # Threshold for SelectFromModel
+  early_stopping_rounds: 50
+  model_type: "segmented"  # Options: "segmented", "single"
+  metrics: ["rmse", "mae", "r2"]
+  
+# Model segments configuration
+segments:
+  very_low:
+    model_type: "lgbm"
+    use_log_transform: true  # Changed to true to handle small values better
+    hyperparams:
+      num_leaves: 15         # Reduced to avoid overfitting
+      learning_rate: 0.01    # Slower learning rate
+      n_estimators: 500      # More trees to compensate
+      min_child_samples: 40  # Increased to prevent overfitting
+      subsample: 0.8         # Added subsample to reduce overfitting
+      colsample_bytree: 0.8  # Added feature subsampling
+      reg_alpha: 0.1         # Added L1 regularization
+      reg_lambda: 1.0        # Added L2 regularization
+  low:
+    model_type: "lgbm"
+    use_log_transform: true
+    hyperparams:
+      num_leaves: 15
+      learning_rate: 0.01
+      n_estimators: 600
+      min_child_samples: 40
+      subsample: 0.8
+      colsample_bytree: 0.8
+      reg_alpha: 0.1
+      reg_lambda: 1.0
+  medium:
+    model_type: "lgbm"
+    use_log_transform: true
+    hyperparams:
+      num_leaves: 20
+      learning_rate: 0.01
+      n_estimators: 600
+      min_child_samples: 30
+      subsample: 0.7
+      colsample_bytree: 0.7
+      reg_alpha: 0.2
+      reg_lambda: 1.0
+  high:
+    model_type: "lgbm"
+    use_log_transform: true
+    hyperparams:
+      num_leaves: 31
+      learning_rate: 0.05
+      n_estimators: 300
+      min_child_samples: 15
+      subsample: 0.8
+      colsample_bytree: 0.8
+  very_high:
+    model_type: "lgbm"
+    use_log_transform: true  # Changed back to true with lower reg to handle outliers better
+    hyperparams:
+      num_leaves: 20
+      learning_rate: 0.01  
+      n_estimators: 600
+      min_child_samples: 8   # Very few samples in this segment
+      subsample: 0.9
+      colsample_bytree: 0.9
+      reg_alpha: 0.05        # Light regularization for this segment
+      reg_lambda: 0.5
+
+# Model versioning
+versioning:
+  strategy: "timestamp"  # Options: "timestamp", "semantic", "git_hash"
+  retention_count: 5  # Number of model versions to retain
+  auto_register: true
+  promote_latest_version: true
+  
+# MLflow configuration
+mlflow:
+  tracking_uri: "./mlruns"
+  experiment_name: "premium_prediction"
+  registry_uri: "sqlite:///mlruns.db"
+  artifact_location: "artifacts"
+  tags:
+    project: "premium_prediction"
+    model_type: "segmented_regression"
+  autolog: true
+
+# API service configuration
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  timeout: 120
+  log_level: "info"
+  enable_docs: true
+  cors_origins: ["*"]
+  rate_limit: 100  # Requests per minute
+  
+# Kubernetes deployment settings
+kubernetes:
+  namespace: "mlops-premium"
+  replicas: 2
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  autoscaling:
+    enabled: true
+    min_replicas: 1
+    max_replicas: 5
+    target_cpu_utilization: 70
+  liveness_probe:
+    path: "/health"
+    initial_delay_seconds: 30
+    period_seconds: 60
+  readiness_probe:
+    path: "/ready"
+    initial_delay_seconds: 15
+    period_seconds: 30
+    
+# Monitoring configuration
+monitoring:
+  enable_prometheus: true
+  enable_grafana: true
+  metrics:
+    prediction_latency: true
+    data_drift:
+      enabled: true
+      threshold: 0.1
+    model_performance:
+      enabled: true
+      threshold_rmse: 0.15
+      threshold_r2: 0.75
+  log_predictions: true
+  log_features: false  # Set to true for debugging, false for production
+  alert_channels:
+    email: "alerts@example.com"
+    slack_webhook: ""
+    
+# Data drift detection
+drift_detection:
+  feature_monitoring: true
+  target_monitoring: true
+  scheduled_runs: "0 */6 * * *"  # cron schedule (every 6 hours)
+  reference_dataset: "data/reference/reference_data.csv"
+  drift_threshold: 0.05
+  
+# Retraining configuration
+retraining:
+  auto_retrain: true
+  trigger_condition: "scheduled"  # Options: "scheduled", "drift_detected", "manual"
+  schedule: "0 0 * * 0"  # cron schedule (weekly on Sunday at midnight)
+  min_data_points: 1000
+  
+# Security settings
+security:
+  api_key_auth: true
+  rate_limiting: true
+  encryption:
+    model_artifacts: false
+    sensitive_data: true

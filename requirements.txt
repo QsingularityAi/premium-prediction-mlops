@@ -1,0 +1,32 @@
+# ML Dependencies
+pandas
+numpy
+scikit-learn
+lightgbm
+xgboost
+category_encoders
+matplotlib
+seaborn
+
+# MLOps Tools
+dvc
+mlflow>=2.0.0
+pytest
+fastapi
+uvicorn
+python-dotenv
+
+# Monitoring & Validation
+great-expectations
+prometheus-client
+grafana-client
+
+# Kubernetes
+kubernetes
+docker
+
+# Development
+black
+flake8
+isort
+pre-commit

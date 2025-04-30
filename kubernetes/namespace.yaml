@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mlops-premium
+  labels:
+    name: mlops-premium
+    environment: production
+    project: premium-prediction
+
