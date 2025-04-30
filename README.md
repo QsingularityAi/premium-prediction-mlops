@@ -187,7 +187,7 @@ curl -X POST "http://localhost:8000/predict" \
 ## 📁 Project Structure
 
 ```
-End_to_End_MLOPs_regression/
+premium-prediction-mlops/
 ├── config/                # Configuration files
 │   └── config.yaml        # Main configuration
 ├── data/                  # Data directory (managed by DVC)
