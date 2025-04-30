@@ -319,7 +319,3 @@ For more detailed troubleshooting, refer to the [CHECKLIST.md](CHECKLIST.md) and
 ## 📜 License
 
 MIT License
-
-## 🙏 Acknowledgments
-
-- [List any acknowledgments, libraries, or resources here]
