@@ -1,32 +1,36 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import joblib
 import json
-import os
 import logging
+import os
 import uuid
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional, Any, Union
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import joblib
 
 # Machine learning imports
 import lightgbm as lgb
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 import xgboost as xgb
-from sklearn.model_selection import RandomizedSearchCV, KFold
-from sklearn.compose import TransformedTargetRegressor
-from sklearn.feature_selection import SelectFromModel
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.inspection import partial_dependence, PartialDependenceDisplay
 
 # Parameter distributions
-from scipy.stats import uniform, randint
+from scipy.stats import randint, uniform
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.feature_selection import SelectFromModel
+from sklearn.inspection import PartialDependenceDisplay, partial_dependence
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import KFold, RandomizedSearchCV
+from sklearn.pipeline import Pipeline
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 class ModelTrainer:
     """
@@ -42,12 +46,14 @@ class ModelTrainer:
             config: Dictionary containing configuration parameters
         """
         self.config = config
-        self.random_state = config['training']['random_state']
-        self.n_iter_search = config['training']['n_iter_search']
-        self.cv_folds_tuning = config['training']['cv_folds_tuning']
-        self.cv_folds_eval = config['training']['cv_folds_eval']
-        self.feature_selection_threshold = config['training']['feature_selection_threshold']
-        self.model_dir = Path(config['paths']['model_dir'])
+        self.random_state = config["training"]["random_state"]
+        self.n_iter_search = config["training"]["n_iter_search"]
+        self.cv_folds_tuning = config["training"]["cv_folds_tuning"]
+        self.cv_folds_eval = config["training"]["cv_folds_eval"]
+        self.feature_selection_threshold = config["training"][
+            "feature_selection_threshold"
+        ]
+        self.model_dir = Path(config["paths"]["model_dir"])
         self.trained_models = {}
 
         # Create model directory if it doesn't exist
@@ -65,133 +71,131 @@ class ModelTrainer:
         """
         # Parameter distributions for tuning
         lgbm_param_dist = {
-            'model__n_estimators': randint(100, 800),
-            'model__learning_rate': uniform(0.005, 0.05),
-            'model__num_leaves': randint(15, 60),
-            'model__max_depth': randint(3, 10),
-            'model__min_child_samples': randint(10, 50),
-            'model__subsample': uniform(0.6, 0.4),
-            'model__colsample_bytree': uniform(0.6, 0.4),
-            'model__reg_alpha': uniform(0.0, 1.0),
-            'model__reg_lambda': uniform(0.0, 1.0),
+            "model__n_estimators": randint(100, 800),
+            "model__learning_rate": uniform(0.005, 0.05),
+            "model__num_leaves": randint(15, 60),
+            "model__max_depth": randint(3, 10),
+            "model__min_child_samples": randint(10, 50),
+            "model__subsample": uniform(0.6, 0.4),
+            "model__colsample_bytree": uniform(0.6, 0.4),
+            "model__reg_alpha": uniform(0.0, 1.0),
+            "model__reg_lambda": uniform(0.0, 1.0),
         }
 
         xgb_param_dist = {
-            'model__n_estimators': randint(100, 800),
-            'model__learning_rate': uniform(0.005, 0.05),
-            'model__max_depth': randint(3, 9),
-            'model__min_child_weight': randint(1, 10),
-            'model__subsample': uniform(0.6, 0.4),
-            'model__colsample_bytree': uniform(0.6, 0.4),
-            'model__gamma': uniform(0, 0.5),
-            'model__reg_alpha': uniform(0.0, 1.0),
-            'model__reg_lambda': uniform(0.0, 1.0),
+            "model__n_estimators": randint(100, 800),
+            "model__learning_rate": uniform(0.005, 0.05),
+            "model__max_depth": randint(3, 9),
+            "model__min_child_weight": randint(1, 10),
+            "model__subsample": uniform(0.6, 0.4),
+            "model__colsample_bytree": uniform(0.6, 0.4),
+            "model__gamma": uniform(0, 0.5),
+            "model__reg_alpha": uniform(0.0, 1.0),
+            "model__reg_lambda": uniform(0.0, 1.0),
         }
 
         # Initialize segment model configs
         segment_model_configs = {}
-        
+
         # Iterate through segments in the config
-        for segment, segment_config in self.config['segments'].items():
+        for segment, segment_config in self.config["segments"].items():
             # Get model type and log transform setting from config
-            model_type = segment_config.get('model_type', 'lgbm')
-            use_log_transform = segment_config.get('use_log_transform', False)
-            
+            model_type = segment_config.get("model_type", "lgbm")
+            use_log_transform = segment_config.get("use_log_transform", False)
+
             # Create base model based on config
-            if model_type.lower() == 'lgbm':
+            if model_type.lower() == "lgbm":
                 # Start with default parameters
                 model_params = {
-                    'objective': 'regression',
-                    'random_state': self.random_state,
-                    'n_jobs': -1,
-                    'verbose': -1,
-                    'feature_name': 'auto'
+                    "objective": "regression",
+                    "random_state": self.random_state,
+                    "n_jobs": -1,
+                    "verbose": -1,
+                    "feature_name": "auto",
                 }
-                
+
                 # Add hyperparameters from config if available
-                if 'hyperparams' in segment_config:
-                    model_params.update(segment_config['hyperparams'])
-                
+                if "hyperparams" in segment_config:
+                    model_params.update(segment_config["hyperparams"])
+
                 model_base = lgb.LGBMRegressor(**model_params)
                 selector = SelectFromModel(
-                    model_base,
-                    threshold=self.feature_selection_threshold,
-                    prefit=False
+                    model_base, threshold=self.feature_selection_threshold, prefit=False
                 )
                 params = lgbm_param_dist
-                
-            elif model_type.lower() == 'xgb':
+
+            elif model_type.lower() == "xgb":
                 # Start with default parameters
                 model_params = {
-                    'objective': 'reg:squarederror',
-                    'random_state': self.random_state,
-                    'n_jobs': -1
+                    "objective": "reg:squarederror",
+                    "random_state": self.random_state,
+                    "n_jobs": -1,
                 }
-                
+
                 # Add hyperparameters from config if available
-                if 'hyperparams' in segment_config:
-                    model_params.update(segment_config['hyperparams'])
-                
+                if "hyperparams" in segment_config:
+                    model_params.update(segment_config["hyperparams"])
+
                 model_base = xgb.XGBRegressor(**model_params)
                 selector = SelectFromModel(
-                    model_base,
-                    threshold=self.feature_selection_threshold,
-                    prefit=False
+                    model_base, threshold=self.feature_selection_threshold, prefit=False
                 )
                 params = xgb_param_dist
             else:
-                logger.warning(f"Unknown model type '{model_type}' for segment '{segment}'. Using default LGBM.")
+                logger.warning(
+                    f"Unknown model type '{model_type}' for segment '{segment}'. Using default LGBM."
+                )
                 model_base = lgb.LGBMRegressor(
-                    objective='regression',
+                    objective="regression",
                     random_state=self.random_state,
                     n_jobs=-1,
                     verbose=-1,
-                    feature_name='auto'
+                    feature_name="auto",
                 )
                 selector = SelectFromModel(
-                    model_base,
-                    threshold=self.feature_selection_threshold,
-                    prefit=False
+                    model_base, threshold=self.feature_selection_threshold, prefit=False
                 )
                 params = lgbm_param_dist
-            
+
             # Add to config dictionary
             segment_model_configs[segment] = {
-                'model': model_base,
-                'selector': selector,
-                'params': params,
-                'use_log_transform': use_log_transform
+                "model": model_base,
+                "selector": selector,
+                "params": params,
+                "use_log_transform": use_log_transform,
             }
-            
-            logger.info(f"Configured {segment} segment with {model_type} model, log_transform={use_log_transform}")
-            if 'hyperparams' in segment_config:
+
+            logger.info(
+                f"Configured {segment} segment with {model_type} model, log_transform={use_log_transform}"
+            )
+            if "hyperparams" in segment_config:
                 logger.info(f"  Hyperparameters: {segment_config['hyperparams']}")
-        
+
         # Check if we have all required segments
-        expected_segments = ['very_low', 'low', 'medium', 'high', 'very_high']
+        expected_segments = ["very_low", "low", "medium", "high", "very_high"]
         for segment in expected_segments:
             if segment not in segment_model_configs:
-                logger.warning(f"Missing configuration for '{segment}' segment. Using default LGBM config.")
-                
+                logger.warning(
+                    f"Missing configuration for '{segment}' segment. Using default LGBM config."
+                )
+
                 # Create default configuration
                 model_base = lgb.LGBMRegressor(
-                    objective='regression',
+                    objective="regression",
                     random_state=self.random_state,
                     n_jobs=-1,
                     verbose=-1,
-                    feature_name='auto'
+                    feature_name="auto",
                 )
                 selector = SelectFromModel(
-                    model_base,
-                    threshold=self.feature_selection_threshold,
-                    prefit=False
+                    model_base, threshold=self.feature_selection_threshold, prefit=False
                 )
-                
+
                 segment_model_configs[segment] = {
-                    'model': model_base,
-                    'selector': selector,
-                    'params': lgbm_param_dist,
-                    'use_log_transform': False
+                    "model": model_base,
+                    "selector": selector,
+                    "params": lgbm_param_dist,
+                    "use_log_transform": False,
                 }
 
         return segment_model_configs
@@ -200,7 +204,7 @@ class ModelTrainer:
         self,
         segment_data_train: Dict,
         preprocessor: Any,
-        segment_model_configs: Optional[Dict] = None
+        segment_model_configs: Optional[Dict] = None,
     ) -> Dict:
         """
         Train models for each segment.
@@ -226,53 +230,62 @@ class ModelTrainer:
 
             # Skip if too few samples for cross-validation
             if len(X_seg) < self.cv_folds_tuning * 2:
-                logger.info(f"Skipping segment '{segment}' due to insufficient data ({len(X_seg)} samples) for CV={self.cv_folds_tuning}.")
+                logger.info(
+                    f"Skipping segment '{segment}' due to insufficient data ({len(X_seg)} samples) for CV={self.cv_folds_tuning}."
+                )
                 trained_models[segment] = None
                 continue
 
             logger.info(f"--- Tuning {segment.capitalize()} segment model ---")
 
             # Create pipeline
-            pipeline_to_tune = Pipeline(steps=[
-                ('preprocessor', preprocessor),
-                ('selector', config['selector']),
-                ('model', config['model'])
-            ])
+            pipeline_to_tune = Pipeline(
+                steps=[
+                    ("preprocessor", preprocessor),
+                    ("selector", config["selector"]),
+                    ("model", config["model"]),
+                ]
+            )
 
             # Apply log transformation if configured
-            if config['use_log_transform']:
+            if config["use_log_transform"]:
                 final_estimator = TransformedTargetRegressor(
-                    regressor=pipeline_to_tune,
-                    func=np.log1p,
-                    inverse_func=np.expm1
+                    regressor=pipeline_to_tune, func=np.log1p, inverse_func=np.expm1
                 )
-                search_param_dist = {f'regressor__{k}': v for k, v in config['params'].items()}
+                search_param_dist = {
+                    f"regressor__{k}": v for k, v in config["params"].items()
+                }
             else:
                 final_estimator = pipeline_to_tune
-                search_param_dist = config['params']
-                
+                search_param_dist = config["params"]
+
             # Check if hyperparameters are fixed in config
-            segment_config = self.config['segments'].get(segment, {})
-            hyperparams = segment_config.get('hyperparams', {})
-            
+            segment_config = self.config["segments"].get(segment, {})
+            hyperparams = segment_config.get("hyperparams", {})
+
             # If we have specific hyperparameters in config, use them directly instead of RandomizedSearchCV
-            if hyperparams and all(key in hyperparams for key in ['num_leaves', 'learning_rate', 'n_estimators']):
-                logger.info(f"Using fixed hyperparameters for {segment} segment from config.")
-                
+            if hyperparams and all(
+                key in hyperparams
+                for key in ["num_leaves", "learning_rate", "n_estimators"]
+            ):
+                logger.info(
+                    f"Using fixed hyperparameters for {segment} segment from config."
+                )
+
                 # Train the model directly with specified hyperparameters
                 try:
                     final_estimator.fit(X_seg, y_seg)
                     trained_models[segment] = final_estimator
-                    
+
                     # Store metadata about the model
                     metadata[segment] = {
-                        'training_samples': int(len(X_seg)),
-                        'model_type': config['model'].__class__.__name__,
-                        'log_transform': bool(config['use_log_transform']),
-                        'fixed_hyperparams': hyperparams,
-                        'timestamp': datetime.now().isoformat()
+                        "training_samples": int(len(X_seg)),
+                        "model_type": config["model"].__class__.__name__,
+                        "log_transform": bool(config["use_log_transform"]),
+                        "fixed_hyperparams": hyperparams,
+                        "timestamp": datetime.now().isoformat(),
                     }
-                    
+
                     logger.info(f"Trained {segment} model with fixed hyperparameters.")
                 except Exception as e:
                     logger.error(f"ERROR during training for segment {segment}: {e}")
@@ -284,11 +297,11 @@ class ModelTrainer:
                     param_distributions=search_param_dist,
                     n_iter=self.n_iter_search,
                     cv=self.cv_folds_tuning,
-                    scoring='neg_root_mean_squared_error',
+                    scoring="neg_root_mean_squared_error",
                     random_state=self.random_state,
                     n_jobs=-1,
                     verbose=1,
-                    error_score='raise'
+                    error_score="raise",
                 )
 
                 try:
@@ -301,16 +314,20 @@ class ModelTrainer:
 
                     # Store metadata about the model
                     metadata[segment] = {
-                        'best_score': float(best_score),
-                        'best_params': {k: (float(v) if isinstance(v, (int, float)) else v) 
-                                      for k, v in best_params.items()},
-                        'training_samples': int(len(X_seg)),
-                        'model_type': config['model'].__class__.__name__,
-                        'log_transform': bool(config['use_log_transform']),
-                        'timestamp': datetime.now().isoformat()
+                        "best_score": float(best_score),
+                        "best_params": {
+                            k: (float(v) if isinstance(v, (int, float)) else v)
+                            for k, v in best_params.items()
+                        },
+                        "training_samples": int(len(X_seg)),
+                        "model_type": config["model"].__class__.__name__,
+                        "log_transform": bool(config["use_log_transform"]),
+                        "timestamp": datetime.now().isoformat(),
                     }
 
-                    logger.info(f"Best score (neg RMSE) for {segment}: {best_score:.4f}")
+                    logger.info(
+                        f"Best score (neg RMSE) for {segment}: {best_score:.4f}"
+                    )
                 except Exception as e:
                     logger.error(f"ERROR during tuning for segment {segment}: {e}")
                     trained_models[segment] = None
@@ -325,7 +342,7 @@ class ModelTrainer:
         trained_models: Dict,
         X_test: pd.DataFrame,
         y_test: pd.Series,
-        test_masks: Dict
+        test_masks: Dict,
     ) -> Tuple[np.ndarray, Dict, Dict]:
         """
         Evaluate trained models on test data.
@@ -353,13 +370,17 @@ class ModelTrainer:
             if model is not None and len(X_seg_test) > 0:
                 try:
                     y_pred_segment = model.predict(X_seg_test)
-                    y_pred_segment = np.maximum(0, y_pred_segment)  # Ensure predictions are non-negative
+                    y_pred_segment = np.maximum(
+                        0, y_pred_segment
+                    )  # Ensure predictions are non-negative
                     y_pred_combined[mask] = y_pred_segment
                 except Exception as e:
                     logger.error(f"ERROR predicting for segment {segment}: {e}")
                     prediction_successful = False
             elif len(X_seg_test) > 0:
-                logger.warning(f"WARNING: Model for segment '{segment}' not trained. Predictions zero.")
+                logger.warning(
+                    f"WARNING: Model for segment '{segment}' not trained. Predictions zero."
+                )
                 prediction_successful = False
 
         # Calculate evaluation metrics
@@ -372,9 +393,9 @@ class ModelTrainer:
             combined_r2 = r2_score(y_test, y_pred_combined)
 
             combined_metrics = {
-                'mae': combined_mae,
-                'rmse': combined_rmse,
-                'r2': combined_r2
+                "mae": combined_mae,
+                "rmse": combined_rmse,
+                "r2": combined_r2,
             }
 
             logger.info(f"Overall MAE:  {combined_mae:.2f}")
@@ -393,29 +414,40 @@ class ModelTrainer:
                 if count > 0:
                     mae = mean_absolute_error(y_seg_test, y_seg_pred)
                     rmse = np.sqrt(mean_squared_error(y_seg_test, y_seg_pred))
-                    r2 = r2_score(y_seg_test, y_seg_pred) if np.var(y_seg_test) > 1e-9 else np.nan
+                    r2 = (
+                        r2_score(y_seg_test, y_seg_pred)
+                        if np.var(y_seg_test) > 1e-9
+                        else np.nan
+                    )
 
                     segment_metrics[segment] = {
-                        'mae': float(mae),
-                        'rmse': float(rmse),
-                        'r2': float(r2) if not np.isnan(r2) else None,
-                        'count': int(count)
+                        "mae": float(mae),
+                        "rmse": float(rmse),
+                        "r2": float(r2) if not np.isnan(r2) else None,
+                        "count": int(count),
                     }
 
                     r2_str = f"{r2:.4f}" if not np.isnan(r2) else "N/A"
-                    logger.info(f"{segment.capitalize():<10} (N={count:<5}): MAE={mae:<7.2f} RMSE={rmse:<7.2f} R²={r2_str:<7}")
+                    logger.info(
+                        f"{segment.capitalize():<10} (N={count:<5}): MAE={mae:<7.2f} RMSE={rmse:<7.2f} R²={r2_str:<7}"
+                    )
                 else:
                     segment_metrics[segment] = {
-                        'mae': None,
-                        'rmse': None,
-                        'r2': None,
-                        'count': 0
+                        "mae": None,
+                        "rmse": None,
+                        "r2": None,
+                        "count": 0,
                     }
-                    logger.info(f"{segment.capitalize():<10} (N={count:<5}): No test samples")
+                    logger.info(
+                        f"{segment.capitalize():<10} (N={count:<5}): No test samples"
+                    )
         else:
             logger.warning("Evaluation skipped due to prediction errors.")
-            combined_metrics = {'mae': None, 'rmse': None, 'r2': None}
-            segment_metrics = {segment: {'mae': None, 'rmse': None, 'r2': None, 'count': 0} for segment in test_masks}
+            combined_metrics = {"mae": None, "rmse": None, "r2": None}
+            segment_metrics = {
+                segment: {"mae": None, "rmse": None, "r2": None, "count": 0}
+                for segment in test_masks
+            }
 
         return y_pred_combined, combined_metrics, segment_metrics
 
@@ -423,7 +455,7 @@ class ModelTrainer:
         self,
         trained_models: Dict,
         segment_data_train: Dict,
-        output_dir: Optional[str] = None
+        output_dir: Optional[str] = None,
     ) -> Dict:
         """
         Analyze feature importance for each segment model.
@@ -449,16 +481,17 @@ class ModelTrainer:
         Args:
             metadata: Dictionary containing metadata for each trained segment model.
         """
-        metadata_path = self.model_dir / 'model_metadata.json'
+        metadata_path = self.model_dir / "model_metadata.json"
         try:
-            with open(metadata_path, 'w') as f:
+            with open(metadata_path, "w") as f:
                 json.dump(metadata, f, indent=4)
             logger.info(f"Model metadata saved to {metadata_path}")
         except Exception as e:
             logger.error(f"Failed to save model metadata: {e}")
 
+
 # Example usage (if run directly)
-if __name__ == '__main__':
+if __name__ == "__main__":
     # This part would require sample data and config to run
     logger.info("ModelTrainer script executed directly (example usage).")
     # Example: Load config, data, preprocessor, then instantiate and run trainer

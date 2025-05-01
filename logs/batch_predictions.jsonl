@@ -27,3 +27,4 @@
 {"request_id": "batch_1746052598234", "timestamp": "2025-05-01T00:36:38.235640", "count": 2, "prediction_stats": {"min": 1500.0, "max": 2000.0, "mean": 1750.0, "median": 1750.0}, "segment_counts": {"high": 1, "medium": 1}}
 {"request_id": "batch_1746052639177", "timestamp": "2025-05-01T00:37:19.178478", "count": 2, "prediction_stats": {"min": 1500.0, "max": 2000.0, "mean": 1750.0, "median": 1750.0}, "segment_counts": {"high": 1, "medium": 1}}
 {"request_id": "batch_1746053004552", "timestamp": "2025-05-01T00:43:24.572221", "count": 2, "prediction_stats": {"min": 1110.7316251056216, "max": 1172.5152353459562, "mean": 1141.623430225789, "median": 1141.623430225789}, "segment_counts": {"medium": 2}}
+{"request_id": "batch_1746105106839", "timestamp": "2025-05-01T15:11:46.841353", "count": 2, "prediction_stats": {"min": 1500.0, "max": 2000.0, "mean": 1750.0, "median": 1750.0}, "segment_counts": {"medium": 1, "high": 1}}

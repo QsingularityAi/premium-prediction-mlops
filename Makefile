@@ -115,7 +115,7 @@ docker-build:
 # Run Docker container locally
 docker-run:
 	@echo "Running Docker container..."
-	docker run -p 8000:8000 -v $(PWD)/models:/app/models -v $(PWD)/data:/app/data -v $(PWD)/logs:/app/logs $(DOCKER_IMAGE):latest
+	docker run -p 8000:8000 -v "$(PWD)/models":/app/models -v "$(PWD)/data":/app/data -v "$(PWD)/logs":/app/logs $(DOCKER_IMAGE):latest
 	@echo "Docker container running"
 
 # Deploy to Kubernetes
@@ -143,4 +143,3 @@ drift-check:
 	@echo "Checking for data drift..."
 	$(PYTHON_VENV) -m src.drift_detection --config $(CONFIG_FILE)
 	@echo "Drift check complete"
-
