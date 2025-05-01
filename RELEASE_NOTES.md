@@ -151,12 +151,10 @@ No breaking changes in this initial release.
 
 For future versions, breaking changes will be listed here with mitigation strategies.
 
-## Contributors
+## Developers
 
-- Jane Doe - Lead Data Scientist
-- John Smith - MLOps Engineer
-- Alex Johnson - Software Developer
-- Sam Wilson - DevOps Engineer
+- Anurag Trivedi - AI/ML Engineer
+
 
 ## Support Information
 
@@ -167,7 +165,7 @@ For future versions, breaking changes will be listed here with mitigation strate
 
 ### Getting Help
 - **GitHub Issues**: Submit issues through our GitHub repository
-- **Email Support**: mlops-support@example.com
+- **Email Support**: anuragtrivedi007@gmail.com
 - **Slack Channel**: #mlops-premium-prediction
 
 ### Reporting Bugs
