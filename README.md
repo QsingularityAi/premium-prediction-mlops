@@ -239,6 +239,27 @@ premium-prediction-mlops/
 
 5. Push to your fork and create a pull request
 
+### Using the Makefile
+
+The `Makefile` in the root directory provides a set of commands to automate and standardize common development, testing, deployment, and operational tasks. It acts as a central control panel for the project, encapsulating complex command sequences into simple, memorable targets (`make <command>`). This promotes consistency, reduces errors, and makes it easier for developers to interact with the various stages of the MLOps lifecycle.
+
+Key commands include:
+- `make setup`: Set up the development environment.
+- `make format`: Format code using black and isort.
+- `make lint`: Run linters (flake8, black, isort).
+- `make test`: Run the test suite.
+- `make train`: Train the models.
+- `make serve`: Run the API server locally.
+- `make docker-build`: Build the Docker image.
+- `make docker-run`: Run the Docker container locally.
+- `make deploy`: Deploy the application to Kubernetes.
+- `make monitor`: Deploy monitoring components.
+- `make clean`: Clean up generated files.
+- `make help`: Show all available commands.
+
+Refer to the `Makefile` itself for the full list and details.
+
+
 ### Code Style
 
 - Follow PEP 8 guidelines
