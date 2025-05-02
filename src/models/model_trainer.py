@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import joblib
+import warnings
 
 # Machine learning imports
 import lightgbm as lgb
@@ -24,6 +25,7 @@ from sklearn.inspection import PartialDependenceDisplay, partial_dependence
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import KFold, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
+from sklearn.utils.validation import DataConversionWarning # Although not used directly, good practice if filtering warnings
 
 # Configure logging
 logging.basicConfig(
@@ -111,7 +113,6 @@ class ModelTrainer:
                     "random_state": self.random_state,
                     "n_jobs": -1,
                     "verbose": -1,
-                    "feature_name": "auto",
                 }
 
                 # Add hyperparameters from config if available
@@ -150,7 +151,6 @@ class ModelTrainer:
                     random_state=self.random_state,
                     n_jobs=-1,
                     verbose=-1,
-                    feature_name="auto",
                 )
                 selector = SelectFromModel(
                     model_base, threshold=self.feature_selection_threshold, prefit=False
@@ -185,7 +185,6 @@ class ModelTrainer:
                     random_state=self.random_state,
                     n_jobs=-1,
                     verbose=-1,
-                    feature_name="auto",
                 )
                 selector = SelectFromModel(
                     model_base, threshold=self.feature_selection_threshold, prefit=False
@@ -246,6 +245,8 @@ class ModelTrainer:
                     ("model", config["model"]),
                 ]
             )
+            # Ensure the pipeline outputs pandas DataFrames to preserve feature names
+            pipeline_to_tune.set_output(transform="pandas")
 
             # Apply log transformation if configured
             if config["use_log_transform"]:
@@ -369,7 +370,16 @@ class ModelTrainer:
 
             if model is not None and len(X_seg_test) > 0:
                 try:
-                    y_pred_segment = model.predict(X_seg_test)
+                    # Suppress the specific UserWarning about feature names during prediction
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings(
+                            "ignore",
+                            message="X does not have valid feature names, but LGBMRegressor was fitted with feature names",
+                            category=UserWarning,
+                            module="sklearn.utils.validation"
+                        )
+                        y_pred_segment = model.predict(X_seg_test)
+
                     y_pred_segment = np.maximum(
                         0, y_pred_segment
                     )  # Ensure predictions are non-negative

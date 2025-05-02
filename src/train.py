@@ -17,7 +17,10 @@ from typing import Any, Dict, Optional
 
 import matplotlib.pyplot as plt
 import mlflow
+import mlflow.models
 import mlflow.sklearn
+from mlflow.models.signature import ModelSignature
+from mlflow.types.schema import Schema, ColSpec
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -370,11 +373,40 @@ def main():
                 try:
                     for segment, model in trained_models.items():
                         if model is not None:
-                            mlflow.sklearn.log_model(
-                                model,
-                                artifact_path=f"models/{segment}",
-                                registered_model_name=f"premium_prediction_{segment}",
-                            )
+                            # Get a sample input for the signature/inference
+                            X_seg_train, _ = segment_data_train[segment]
+                            input_example = X_seg_train.head() # Use first 5 rows as basis for schema
+
+                            # Manually define the signature
+                            try:
+                                # Map numpy dtypes to MLflow schema types
+                                dtype_mapping = {
+                                    'int64': 'long',
+                                    'int32': 'integer',
+                                    'float64': 'double',
+                                    'float32': 'float',
+                                    'object': 'string',
+                                    'category': 'string',
+                                    'bool': 'boolean',
+                                    'datetime64[ns]': 'datetime'
+                                }
+                                input_schema = Schema([
+                                    ColSpec(type=dtype_mapping.get(t.name, 'string'), name=c) for c, t in input_example.dtypes.items() # Use t.name for dtype string
+                                ])
+                                output_schema = Schema([ColSpec(type="double", name="prediction")]) # Assuming double/float output
+                                signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+                                logger.info(f"Manually defined signature for segment {segment}.")
+
+                                # Log the model with the manually defined signature
+                                mlflow.sklearn.log_model(
+                                    sk_model=model,
+                                    artifact_path=f"models/{segment}",
+                                    registered_model_name=f"premium_prediction_{segment}",
+                                    signature=signature # Use the manually defined signature
+                                )
+                            except Exception as log_e:
+                                logger.error(f"Failed to log model with manual signature for segment {segment}: {log_e}. Skipping registration for this segment.")
+
                     logger.info("Models registered in MLflow Model Registry")
                 except Exception as e:
                     logger.warning(f"Error registering models: {e}")
