@@ -1,0 +1,87 @@
+{
+  "pipeline": {
+    "name": "premium-model-pipeline",
+    "roleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/service-role/AWSCodePipelineServiceRole-premium-model",
+    "artifactStore": {
+      "type": "S3",
+      "location": "premium-model-pipeline-artifacts"
+    },
+    "stages": [
+      {
+        "name": "Source",
+        "actions": [
+          {
+            "name": "Source",
+            "actionTypeId": {
+              "category": "Source",
+              "owner": "AWS",
+              "provider": "CodeStarSourceConnection",
+              "version": "1"
+            },
+            "configuration": {
+              "ConnectionArn": "arn:aws:codestar-connections:${AWS_REGION}:${AWS_ACCOUNT_ID}:connection/your-connection-id",
+              "FullRepositoryId": "your-github-username/E2EMLOPsregression",
+              "BranchName": "main"
+            },
+            "outputArtifacts": [
+              {
+                "name": "SourceCode"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Build",
+        "actions": [
+          {
+            "name": "BuildAndTest",
+            "actionTypeId": {
+              "category": "Build",
+              "owner": "AWS",
+              "provider": "CodeBuild",
+              "version": "1"
+            },
+            "configuration": {
+              "ProjectName": "premium-model-build"
+            },
+            "inputArtifacts": [
+              {
+                "name": "SourceCode"
+              }
+            ],
+            "outputArtifacts": [
+              {
+                "name": "BuildOutput"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Deploy",
+        "actions": [
+          {
+            "name": "DeployToEKS",
+            "actionTypeId": {
+              "category": "Deploy",
+              "owner": "AWS",
+              "provider": "ServiceCatalog",
+              "version": "1"
+            },
+            "configuration": {
+              "ClusterName": "${EKS_CLUSTER_NAME}",
+              "ManifestPath": "BuildOutput::kubernetes",
+              "Namespace": "mlops-premium"
+            },
+            "inputArtifacts": [
+              {
+                "name": "BuildOutput"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
